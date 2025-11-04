@@ -31,6 +31,8 @@
 #define FRAME_DELAY 8
 #define ENEMY_FRAME_DELAY 10
 
+//Comentário teste de branch
+
 typedef enum { MENU, JOGANDO, SAINDO } GameState;
 
 typedef struct {
