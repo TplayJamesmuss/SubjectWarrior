@@ -28,11 +28,13 @@
 #define CAMERA_MARGIN 400
 
 typedef enum { PROLOGO, MENU, JOGANDO, SAINDO } GameState;
+typedef enum { AREA_1, AREA_2 } AreaAtual;
 
 typedef struct {
     float x, y;
     float velocity_y;
     bool is_jumping;
+    AreaAtual area;
 } Player;
 
 typedef struct {
@@ -46,6 +48,9 @@ float camera_x = 0.0;
 int prologo_atual = 0;
 double tempo_prologo_inicio = 0.0;
 ALLEGRO_BITMAP* prologo_imagens[5] = { NULL };
+
+ALLEGRO_BITMAP* area1_background = NULL;
+ALLEGRO_BITMAP* area2_background = NULL;
 
 void draw_button(Button* btn, ALLEGRO_FONT* font) {
     ALLEGRO_COLOR bg_color =
@@ -61,6 +66,7 @@ void reset_game(Player* player) {
     player->y = GROUND_Y - PLAYER_H;
     player->velocity_y = 0.0;
     player->is_jumping = false;
+    player->area = AREA_1;
     camera_x = 0.0;
 }
 
@@ -84,6 +90,18 @@ void update_camera(Player* player) {
     }
     if (camera_x > LEVEL_WIDTH - SCREEN_W) {
         camera_x = LEVEL_WIDTH - SCREEN_W;
+    }
+}
+
+void verificar_mudanca_area(Player* player) {
+    if (player->area == AREA_1 && player->x >= LEVEL_WIDTH - PLAYER_W - 10) {
+        player->area = AREA_2;
+        player->x = 100.0;
+        camera_x = 0.0;
+    }
+
+    if (player->area == AREA_2 && player->x < 0) {
+        player->x = 0;
     }
 }
 
@@ -118,7 +136,17 @@ bool carregar_prologo() {
         return false;
     }
 
-    printf("Todas as imagens do prologo foram carregadas com sucesso!\n");
+    return true;
+}
+
+bool carregar_areas() {
+    area1_background = al_load_bitmap("./assets/phase.png");
+    area2_background = al_load_bitmap("./assets/phase2.png");
+
+    if (!area1_background || !area2_background) {
+        fprintf(stderr, "Erro ao carregar fundos das areas\n");
+        return false;
+    }
     return true;
 }
 
@@ -128,6 +156,17 @@ void liberar_prologo() {
             al_destroy_bitmap(prologo_imagens[i]);
             prologo_imagens[i] = NULL;
         }
+    }
+}
+
+void liberar_areas() {
+    if (area1_background) {
+        al_destroy_bitmap(area1_background);
+        area1_background = NULL;
+    }
+    if (area2_background) {
+        al_destroy_bitmap(area2_background);
+        area2_background = NULL;
     }
 }
 
@@ -172,10 +211,9 @@ int main(void) {
 
     ALLEGRO_BITMAP* title_logo_bitmap = al_load_bitmap("./assets/title_logo.png");
     ALLEGRO_BITMAP* menu_background_bitmap = al_load_bitmap("./assets/menu_background.png");
-    ALLEGRO_BITMAP* game_background_bitmap = al_load_bitmap("./assets/phase.png");
     ALLEGRO_BITMAP* ground_bitmap = al_load_bitmap("./assets/ground.png");
 
-    if (!font || !title_logo_bitmap || !menu_background_bitmap || !game_background_bitmap || !ground_bitmap) {
+    if (!font || !title_logo_bitmap || !menu_background_bitmap || !ground_bitmap) {
         fprintf(stderr, "Erro ao carregar recursos\n");
         return -1;
     }
@@ -186,15 +224,19 @@ int main(void) {
         tempo_prologo_inicio = al_get_time();
     }
     else {
-        fprintf(stderr, "Pulando prologo devido a erro no carregamento\n");
         game_state = MENU;
+    }
+
+    if (!carregar_areas()) {
+        return -1;
     }
 
     Player player = {
         100.0,
         GROUND_Y - PLAYER_H,
         0.0,
-        false
+        false,
+        AREA_1
     };
 
     int direction = 1;
@@ -292,6 +334,8 @@ int main(void) {
                     }
                 }
 
+                verificar_mudanca_area(&player);
+
                 if (moving) {
                     frame_count++;
                     if (frame_count >= FRAME_DELAY) {
@@ -344,8 +388,10 @@ int main(void) {
                 draw_button(&play_button, font);
             }
             else if (game_state == JOGANDO) {
-                al_draw_scaled_bitmap(game_background_bitmap,
-                    0, 0, al_get_bitmap_width(game_background_bitmap), al_get_bitmap_height(game_background_bitmap),
+                ALLEGRO_BITMAP* background_atual = (player.area == AREA_1) ? area1_background : area2_background;
+
+                al_draw_scaled_bitmap(background_atual,
+                    0, 0, al_get_bitmap_width(background_atual), al_get_bitmap_height(background_atual),
                     -camera_x, 0, LEVEL_WIDTH, SCREEN_H, 0);
 
                 float ground_w = al_get_bitmap_width(ground_bitmap);
@@ -357,21 +403,20 @@ int main(void) {
                 int flip_flag = (direction == -1) ? ALLEGRO_FLIP_HORIZONTAL : 0;
                 al_draw_bitmap(bitmap_to_draw, player.x - camera_x, player.y, flip_flag);
 
-                al_draw_text(font, al_map_rgb(255, 255, 255), 10, 10, 0,
-                    "ESC para voltar");
+                al_draw_text(font, al_map_rgb(255, 255, 255), 10, 10, 0, "ESC para voltar");
             }
             al_flip_display();
         }
     }
 
     liberar_prologo();
+    liberar_areas();
 
     for (int i = 0; i < TOTAL_FRAMES; i++) {
         al_destroy_bitmap(player_frames_right[i]);
     }
 
     al_destroy_bitmap(title_logo_bitmap);
-    al_destroy_bitmap(game_background_bitmap);
     al_destroy_font(font);
     al_destroy_bitmap(menu_background_bitmap);
     al_destroy_timer(timer);
