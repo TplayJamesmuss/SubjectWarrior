@@ -30,8 +30,8 @@
 #define LEVEL_WIDTH 5760
 #define CAMERA_MARGIN 400
 
-#define MAX_ENEMYS 10
-#define ENEMY_VELOCIDADE 3.0
+#define MAX_ENEMIES 10
+#define ENEMY_SPEED 3.0
 #define ENEMY_SCALE 2.5f
 #define ENEMY_W 79.0
 #define ENEMY_H 35.0
@@ -39,53 +39,53 @@
 #define MAX_ENEMY_FRAMES 4
 #define ENEMY_SPAWN_DISTANCE 1100.0f
 
-#define MAX_VIDAS 3
+#define MAX_LIVES 3
 
-#define MAX_DICAS 4
-#define DICA_DISTANCE 1500.0f
+#define MAX_TIPS 4
+#define TIP_DISTANCE 1500.0f
 
-#define DICA_SCALE 1.3f
+#define TIP_SCALE 1.3f
 
-#define MAX_PERGUNTAS 3
-#define MAX_ALTERNATIVAS 4
+#define MAX_QUESTIONS 3
+#define MAX_OPTIONS 4
 #define DOOR_SCALE 1.0f
 #define DOOR_W 80.0f
 #define DOOR_H 160.0f
 #define INTERACTION_DISTANCE 100.0f
 
-typedef enum { PROLOGO, MENU, JOGANDO, GAME_OVER, END_SCREEN, SAINDO, MOSTRANDO_DICA, DIALOGO } GameState;
+typedef enum { PROLOGUE, MENU, PLAYING, GAME_OVER, END_SCREEN, EXITING, SHOWING_TIP, DIALOG } GameState;
 
-typedef enum { AREA_1, AREA_2 } AreaAtual;
+typedef enum { AREA_1 } AreaCurrent;
 
 typedef struct {
     float x, y;
-    bool coletada;
-    AreaAtual area;
-} Dica;
+    bool collected;
+    AreaCurrent area;
+} Tip;
 
 typedef struct {
     float x, y;
     float velocity_y;
     bool is_jumping;
-    AreaAtual area;
-    int vidas;
-    bool invencivel;
-    double tempo_invencivel;
-    bool morto;
-    double tempo_morte;
+    AreaCurrent area;
+    int lives;
+    bool invincible;
+    double invincible_time;
+    bool dead;
+    double death_time;
     ALLEGRO_BITMAP* death_sprite;
-    int dicas_coletadas;
+    int tips_collected;
 } Player;
 
 typedef struct {
     float x, y;
-    bool ativo;
-    bool spawnado;
-    AreaAtual area;
+    bool active;
+    bool spawned;
+    AreaCurrent area;
     ALLEGRO_BITMAP* sprites[MAX_ENEMY_FRAMES];
-    int frame_atual;
-    int contador_frame;
-    int direcao;
+    int current_frame;
+    int frame_counter;
+    int direction;
 } Enemy;
 
 typedef struct {
@@ -97,79 +97,77 @@ typedef struct {
 } Button;
 
 typedef enum {
-    FALA_BOAS_VINDAS,
-    FALA_PREPARADO,
-    FALA_PERGUNTA1,
-    FALA_PERGUNTA2,
-    FALA_PERGUNTA3,
-    FALA_RESPOSTA_ERRADA,
-    FALA_RESPOSTA_CERTA,
-    FALA_FINAL
-} TipoFala;
+    SPEECH_WELCOME,
+    SPEECH_PREPARED,
+    SPEECH_QUESTION1,
+    SPEECH_QUESTION2,
+    SPEECH_QUESTION3,
+    SPEECH_WRONG_ANSWER,
+    SPEECH_CORRECT_ANSWER,
+    SPEECH_FINAL
+} SpeechType;
 
 typedef struct {
-    char pergunta[200];
-    char alternativas[MAX_ALTERNATIVAS][50];
-    int resposta_correta;
-} Pergunta;
+    char question[200];
+    char options[MAX_OPTIONS][50];
+    int correct_answer;
+} Question;
 
 typedef struct {
     float x, y;
-    bool aberta;
-    int fase_abertura;
+    bool open;
+    int open_phase;
     ALLEGRO_BITMAP* sprites[4];
-    TipoFala fala_atual;
-    int pergunta_atual;
-    bool mostrando_dialogo;
-    bool aguardando_resposta;
-    int alternativa_selecionada;
-    AreaAtual area;
+    SpeechType current_speech;
+    int current_question;
+    bool showing_dialog;
+    bool waiting_answer;
+    int selected_option;
+    AreaCurrent area;
     int sprite_w;
     int sprite_h;
-    double tempo_feedback_inicio;
-} Porta;
+    double feedback_start_time;
+} Door;
 
 float camera_x = 0.0;
 
-int prologo_atual = 0;
-double tempo_prologo_inicio = 0.0;
-double tempo_game_over_inicio = 0.0;
-double tempo_end_inicio = 0.0;
-ALLEGRO_BITMAP* prologo_imagens[5] = { NULL };
+int prologue_index = 0;
+double prologue_start_time = 0.0;
+double game_over_start_time = 0.0;
+double end_start_time = 0.0;
+ALLEGRO_BITMAP* prologue_images[5] = { NULL };
 ALLEGRO_BITMAP* game_over_bitmap = NULL;
 ALLEGRO_BITMAP* end_bitmap = NULL;
 
 ALLEGRO_BITMAP* area1_background = NULL;
-ALLEGRO_BITMAP* area2_background = NULL;
 ALLEGRO_BITMAP* ground1_bitmap = NULL;
-ALLEGRO_BITMAP* ground2_bitmap = NULL;
 ALLEGRO_BITMAP* play_button_normal = NULL;
 ALLEGRO_BITMAP* play_button_hover = NULL;
 ALLEGRO_BITMAP* mouse_sprite = NULL;
 ALLEGRO_BITMAP* heart_full = NULL;
 ALLEGRO_BITMAP* heart_empty = NULL;
 
-ALLEGRO_BITMAP* dica_icon = NULL;
-ALLEGRO_BITMAP* dica_images[MAX_DICAS] = { NULL };
-ALLEGRO_BITMAP* dica_icon_small = NULL;
+ALLEGRO_BITMAP* tip_icon = NULL;
+ALLEGRO_BITMAP* tip_images[MAX_TIPS] = { NULL };
+ALLEGRO_BITMAP* tip_icon_small = NULL;
 ALLEGRO_BITMAP* next_button = NULL;
 ALLEGRO_BITMAP* prev_button = NULL;
 
 ALLEGRO_BITMAP* dialog_box = NULL;
-ALLEGRO_BITMAP* alternativa_selecionada_bg = NULL;
-ALLEGRO_BITMAP* alternativa_normal_bg = NULL;
+ALLEGRO_BITMAP* option_selected_bg = NULL;
+ALLEGRO_BITMAP* option_normal_bg = NULL;
 
 ALLEGRO_BITMAP* player_frames_scaled[MAX_FRAMES] = { NULL };
 ALLEGRO_BITMAP* player_jump_frames_scaled[MAX_JUMP_FRAMES] = { NULL };
 ALLEGRO_BITMAP* player_death_scaled = NULL;
 
-Enemy enemys[MAX_ENEMYS];
+Enemy enemies[MAX_ENEMIES];
 
-Dica dicas[MAX_DICAS];
+Tip tips[MAX_TIPS];
 
-Porta porta;
+Door door;
 
-Pergunta perguntas[MAX_PERGUNTAS] = {
+Question questions[MAX_QUESTIONS] = {
     {
         "Qual filo as formigas fazem parte?",
         {"Insetos", "Nematodeos", "Aracnideos", "Platelmintos"},
@@ -187,8 +185,8 @@ int mouse_x = 0;
 int mouse_y = 0;
 bool mouse_visible = true;
 
-int dica_atual_tela = 0;
-bool mostrando_dica = false;
+int current_tip_index = 0;
+bool showing_tip = false;
 
 void draw_button(Button* btn) {
     ALLEGRO_BITMAP* bitmap_to_draw = btn->hovered ? btn->hover : btn->normal;
@@ -206,54 +204,50 @@ void draw_button(Button* btn) {
     }
 }
 
-bool criar_sprites_escalados(ALLEGRO_BITMAP* frames_originais[], ALLEGRO_BITMAP* frames_destino[], int total_frames, float scale) {
+bool create_scaled_sprites(ALLEGRO_BITMAP* original_frames[], ALLEGRO_BITMAP* dest_frames[], int total_frames, float scale) {
     for (int i = 0; i < total_frames; i++) {
-        if (!frames_originais[i]) {
-            fprintf(stderr, "Frame original %d é NULL\n", i);
+        if (!original_frames[i]) {
             return false;
         }
 
-        int original_width = al_get_bitmap_width(frames_originais[i]);
-        int original_height = al_get_bitmap_height(frames_originais[i]);
+        int original_width = al_get_bitmap_width(original_frames[i]);
+        int original_height = al_get_bitmap_height(original_frames[i]);
         int scaled_width = (int)(original_width * scale);
         int scaled_height = (int)(original_height * scale);
 
         ALLEGRO_BITMAP* scaled_frame = al_create_bitmap(scaled_width, scaled_height);
         if (!scaled_frame) {
-            fprintf(stderr, "Não foi possível criar bitmap escalado para frame %d\n", i);
             return false;
         }
 
         al_set_target_bitmap(scaled_frame);
-        al_draw_scaled_bitmap(frames_originais[i],
+        al_draw_scaled_bitmap(original_frames[i],
             0, 0, original_width, original_height,
             0, 0, scaled_width, scaled_height, 0);
 
         al_set_target_backbuffer(al_get_current_display());
-        frames_destino[i] = scaled_frame;
+        dest_frames[i] = scaled_frame;
     }
     return true;
 }
 
-ALLEGRO_BITMAP* criar_sprite_escalado(ALLEGRO_BITMAP* sprite_original, float scale) {
-    if (!sprite_original) {
-        fprintf(stderr, "Sprite original é NULL\n");
+ALLEGRO_BITMAP* create_scaled_sprite(ALLEGRO_BITMAP* original_sprite, float scale) {
+    if (!original_sprite) {
         return NULL;
     }
 
-    int original_width = al_get_bitmap_width(sprite_original);
-    int original_height = al_get_bitmap_height(sprite_original);
+    int original_width = al_get_bitmap_width(original_sprite);
+    int original_height = al_get_bitmap_height(original_sprite);
     int scaled_width = (int)(original_width * scale);
     int scaled_height = (int)(original_height * scale);
 
     ALLEGRO_BITMAP* scaled_sprite = al_create_bitmap(scaled_width, scaled_height);
     if (!scaled_sprite) {
-        fprintf(stderr, "Não foi possível criar bitmap escalado\n");
         return NULL;
     }
 
     al_set_target_bitmap(scaled_sprite);
-    al_draw_scaled_bitmap(sprite_original,
+    al_draw_scaled_bitmap(original_sprite,
         0, 0, original_width, original_height,
         0, 0, scaled_width, scaled_height, 0);
 
@@ -261,7 +255,7 @@ ALLEGRO_BITMAP* criar_sprite_escalado(ALLEGRO_BITMAP* sprite_original, float sca
     return scaled_sprite;
 }
 
-void liberar_sprites_escalados(ALLEGRO_BITMAP* frames[], int total_frames) {
+void destroy_scaled_sprites(ALLEGRO_BITMAP* frames[], int total_frames) {
     for (int i = 0; i < total_frames; i++) {
         if (frames[i]) {
             al_destroy_bitmap(frames[i]);
@@ -272,20 +266,20 @@ void liberar_sprites_escalados(ALLEGRO_BITMAP* frames[], int total_frames) {
 
 float offset_y = 50.0f;
 
-void inicializar_enemys() {
+void init_enemies() {
     int spawn_count = 4;
     float start_x = 1500.0f;
 
-    for (int i = 0; i < MAX_ENEMYS; i++) {
+    for (int i = 0; i < MAX_ENEMIES; i++) {
         if (i < spawn_count) {
-            enemys[i].x = start_x + (i * ENEMY_SPAWN_DISTANCE);
-            enemys[i].y = GROUND_Y - ENEMY_H - offset_y;
-            enemys[i].ativo = false;
-            enemys[i].spawnado = false;
-            enemys[i].area = AREA_1;
-            enemys[i].frame_atual = 0;
-            enemys[i].contador_frame = 0;
-            enemys[i].direcao = -1;
+            enemies[i].x = start_x + (i * ENEMY_SPAWN_DISTANCE);
+            enemies[i].y = GROUND_Y - ENEMY_H - offset_y;
+            enemies[i].active = false;
+            enemies[i].spawned = false;
+            enemies[i].area = AREA_1;
+            enemies[i].current_frame = 0;
+            enemies[i].frame_counter = 0;
+            enemies[i].direction = -1;
 
             for (int j = 0; j < MAX_ENEMY_FRAMES; j++) {
                 char filename[50];
@@ -293,9 +287,9 @@ void inicializar_enemys() {
                 ALLEGRO_BITMAP* sprite_original = al_load_bitmap(filename);
 
                 if (!sprite_original) {
-                    enemys[i].sprites[j] = al_create_bitmap((int)ENEMY_W, (int)ENEMY_H);
-                    if (enemys[i].sprites[j]) {
-                        al_set_target_bitmap(enemys[i].sprites[j]);
+                    enemies[i].sprites[j] = al_create_bitmap((int)ENEMY_W, (int)ENEMY_H);
+                    if (enemies[i].sprites[j]) {
+                        al_set_target_bitmap(enemies[i].sprites[j]);
                         al_clear_to_color(al_map_rgb(255, 0, 0));
                         al_set_target_backbuffer(al_get_current_display());
                     }
@@ -306,9 +300,9 @@ void inicializar_enemys() {
                     int scaled_width = (int)(original_width * ENEMY_SCALE);
                     int scaled_height = (int)(original_height * ENEMY_SCALE);
 
-                    enemys[i].sprites[j] = al_create_bitmap(scaled_width, scaled_height);
-                    if (enemys[i].sprites[j]) {
-                        al_set_target_bitmap(enemys[i].sprites[j]);
+                    enemies[i].sprites[j] = al_create_bitmap(scaled_width, scaled_height);
+                    if (enemies[i].sprites[j]) {
+                        al_set_target_bitmap(enemies[i].sprites[j]);
                         al_draw_scaled_bitmap(sprite_original,
                             0, 0, original_width, original_height,
                             0, 0, scaled_width, scaled_height, 0);
@@ -319,47 +313,46 @@ void inicializar_enemys() {
             }
         }
         else {
-            enemys[i].x = -10000.0f;
-            enemys[i].y = -10000.0f;
-            enemys[i].ativo = false;
-            enemys[i].spawnado = false;
-            enemys[i].area = AREA_2;
-            enemys[i].frame_atual = 0;
-            enemys[i].contador_frame = 0;
-            enemys[i].direcao = -1;
+            enemies[i].x = -10000.0f;
+            enemies[i].y = -10000.0f;
+            enemies[i].active = false;
+            enemies[i].spawned = false;
+            enemies[i].area = AREA_1;
+            enemies[i].current_frame = 0;
+            enemies[i].frame_counter = 0;
+            enemies[i].direction = -1;
             for (int j = 0; j < MAX_ENEMY_FRAMES; j++) {
-                enemys[i].sprites[j] = NULL;
+                enemies[i].sprites[j] = NULL;
             }
         }
     }
 }
 
-void inicializar_dicas() {
-    for (int i = 0; i < MAX_DICAS; i++) {
-        dicas[i].x = 800.0f + (i * DICA_DISTANCE);
-        dicas[i].y = GROUND_Y - 100.0f;
-        dicas[i].coletada = false;
-        dicas[i].area = AREA_1;
+void init_tips() {
+    for (int i = 0; i < MAX_TIPS; i++) {
+        tips[i].x = 800.0f + (i * TIP_DISTANCE);
+        tips[i].y = GROUND_Y - 100.0f;
+        tips[i].collected = false;
+        tips[i].area = AREA_1;
     }
 }
 
-bool carregar_porta() {
+bool load_door() {
     for (int i = 0; i < 4; i++) {
         char filename[50];
         sprintf_s(filename, sizeof(filename), "./assets/door%d.png", i + 1);
         ALLEGRO_BITMAP* sprite_original = al_load_bitmap(filename);
 
         if (!sprite_original) {
-            fprintf(stderr, "Aviso: nao foi possivel carregar %s, usando fallback\n", filename);
-            porta.sprites[i] = al_create_bitmap((int)DOOR_W, (int)DOOR_H);
-            if (porta.sprites[i]) {
-                al_set_target_bitmap(porta.sprites[i]);
+            door.sprites[i] = al_create_bitmap((int)DOOR_W, (int)DOOR_H);
+            if (door.sprites[i]) {
+                al_set_target_bitmap(door.sprites[i]);
                 al_clear_to_color(al_map_rgb(100, 50, 0));
                 al_set_target_backbuffer(al_get_current_display());
             }
             if (i == 0) {
-                porta.sprite_w = (int)DOOR_W;
-                porta.sprite_h = (int)DOOR_H;
+                door.sprite_w = (int)DOOR_W;
+                door.sprite_h = (int)DOOR_H;
             }
             continue;
         }
@@ -369,9 +362,9 @@ bool carregar_porta() {
         int scaled_width = (int)(original_width * DOOR_SCALE);
         int scaled_height = (int)(original_height * DOOR_SCALE);
 
-        porta.sprites[i] = al_create_bitmap(scaled_width, scaled_height);
-        if (porta.sprites[i]) {
-            al_set_target_bitmap(porta.sprites[i]);
+        door.sprites[i] = al_create_bitmap(scaled_width, scaled_height);
+        if (door.sprites[i]) {
+            al_set_target_bitmap(door.sprites[i]);
             al_draw_scaled_bitmap(sprite_original,
                 0, 0, original_width, original_height,
                 0, 0, scaled_width, scaled_height, 0);
@@ -380,68 +373,68 @@ bool carregar_porta() {
         al_destroy_bitmap(sprite_original);
 
         if (i == 0) {
-            porta.sprite_w = scaled_width;
-            porta.sprite_h = scaled_height;
+            door.sprite_w = scaled_width;
+            door.sprite_h = scaled_height;
         }
     }
 
     return true;
 }
 
-void inicializar_porta() {
-    if (porta.sprite_w <= 0) porta.sprite_w = (int)DOOR_W;
-    if (porta.sprite_h <= 0) porta.sprite_h = (int)DOOR_H;
+void init_door() {
+    if (door.sprite_w <= 0) door.sprite_w = (int)DOOR_W;
+    if (door.sprite_h <= 0) door.sprite_h = (int)DOOR_H;
 
-    porta.x = LEVEL_WIDTH - porta.sprite_w - 100.0f;
-    porta.y = GROUND_Y - porta.sprite_h;
-    porta.aberta = false;
-    porta.fase_abertura = 0;
-    porta.fala_atual = FALA_BOAS_VINDAS;
-    porta.pergunta_atual = 0;
-    porta.mostrando_dialogo = false;
-    porta.aguardando_resposta = false;
-    porta.alternativa_selecionada = -1;
-    porta.area = AREA_2;
-    porta.tempo_feedback_inicio = 0.0;
+    door.x = LEVEL_WIDTH - door.sprite_w - 100.0f;
+    door.y = GROUND_Y - door.sprite_h;
+    door.open = false;
+    door.open_phase = 0;
+    door.current_speech = SPEECH_WELCOME;
+    door.current_question = 0;
+    door.showing_dialog = false;
+    door.waiting_answer = false;
+    door.selected_option = -1;
+    door.area = AREA_1;
+    door.feedback_start_time = 0.0;
 }
 
-void liberar_porta() {
+void destroy_door() {
     for (int i = 0; i < 4; i++) {
-        if (porta.sprites[i]) {
-            al_destroy_bitmap(porta.sprites[i]);
-            porta.sprites[i] = NULL;
+        if (door.sprites[i]) {
+            al_destroy_bitmap(door.sprites[i]);
+            door.sprites[i] = NULL;
         }
     }
 }
 
-bool jogador_perto_da_porta(Player* player) {
-    if (player->area != AREA_2) return false;
+bool player_near_door(Player* player) {
+    if (player->area != door.area) return false;
 
-    float dx = fabs(player->x - porta.x);
-    float dy = fabs(player->y - porta.y);
+    float dx = fabs(player->x - door.x);
+    float dy = fabs(player->y - door.y);
 
     return (dx < INTERACTION_DISTANCE && dy < INTERACTION_DISTANCE);
 }
 
-void atualizar_abertura_porta() {
-    if (porta.fase_abertura > 0 && porta.fase_abertura < 3) {
+void update_door_opening() {
+    if (door.open_phase > 0 && door.open_phase < 3) {
         static double last_update = 0.0;
         double now = al_get_time();
 
         if (now - last_update > 0.5) {
-            porta.fase_abertura++;
+            door.open_phase++;
             last_update = now;
 
-            if (porta.fase_abertura >= 3) {
-                porta.aberta = true;
+            if (door.open_phase >= 3) {
+                door.open = true;
             }
         }
     }
 }
 
-void desenhar_porta() {
-    if (porta.sprites[porta.fase_abertura]) {
-        al_draw_bitmap(porta.sprites[porta.fase_abertura], porta.x - camera_x, porta.y, 0);
+void draw_door() {
+    if (door.sprites[door.open_phase]) {
+        al_draw_bitmap(door.sprites[door.open_phase], door.x - camera_x, door.y, 0);
     }
 }
 
@@ -493,25 +486,25 @@ void draw_wrapped_text(ALLEGRO_FONT* font, const char* text, int x, int y, int m
     }
 }
 
-void liberar_sprites_enemys() {
-    for (int i = 0; i < MAX_ENEMYS; i++) {
+void destroy_enemy_sprites() {
+    for (int i = 0; i < MAX_ENEMIES; i++) {
         for (int j = 0; j < MAX_ENEMY_FRAMES; j++) {
-            if (enemys[i].sprites[j]) {
-                al_destroy_bitmap(enemys[i].sprites[j]);
-                enemys[i].sprites[j] = NULL;
+            if (enemies[i].sprites[j]) {
+                al_destroy_bitmap(enemies[i].sprites[j]);
+                enemies[i].sprites[j] = NULL;
             }
         }
     }
 }
 
-void liberar_sprites_dicas() {
-    if (dica_icon) {
-        al_destroy_bitmap(dica_icon);
-        dica_icon = NULL;
+void destroy_tip_sprites() {
+    if (tip_icon) {
+        al_destroy_bitmap(tip_icon);
+        tip_icon = NULL;
     }
-    if (dica_icon_small) {
-        al_destroy_bitmap(dica_icon_small);
-        dica_icon_small = NULL;
+    if (tip_icon_small) {
+        al_destroy_bitmap(tip_icon_small);
+        tip_icon_small = NULL;
     }
     if (next_button) {
         al_destroy_bitmap(next_button);
@@ -521,10 +514,10 @@ void liberar_sprites_dicas() {
         al_destroy_bitmap(prev_button);
         prev_button = NULL;
     }
-    for (int i = 0; i < MAX_DICAS; i++) {
-        if (dica_images[i]) {
-            al_destroy_bitmap(dica_images[i]);
-            dica_images[i] = NULL;
+    for (int i = 0; i < MAX_TIPS; i++) {
+        if (tip_images[i]) {
+            al_destroy_bitmap(tip_images[i]);
+            tip_images[i] = NULL;
         }
     }
 }
@@ -535,22 +528,22 @@ void reset_game(Player* player) {
     player->velocity_y = 0.0;
     player->is_jumping = false;
     player->area = AREA_1;
-    player->vidas = MAX_VIDAS;
-    player->invencivel = false;
-    player->tempo_invencivel = 0.0;
-    player->morto = false;
-    player->tempo_morte = 0.0;
-    player->dicas_coletadas = 0;
+    player->lives = MAX_LIVES;
+    player->invincible = false;
+    player->invincible_time = 0.0;
+    player->dead = false;
+    player->death_time = 0.0;
+    player->tips_collected = 0;
     camera_x = 0.0;
-    dica_atual_tela = 0;
-    mostrando_dica = false;
+    current_tip_index = 0;
+    showing_tip = false;
 
-    for (int i = 0; i < MAX_DICAS; i++) {
-        dicas[i].coletada = false;
+    for (int i = 0; i < MAX_TIPS; i++) {
+        tips[i].collected = false;
     }
 
-    inicializar_porta();
-    inicializar_enemys();
+    init_door();
+    init_enemies();
 }
 
 void clear_keys(bool keys[]) {
@@ -576,105 +569,84 @@ void update_camera(Player* player) {
     }
 }
 
-void verificar_mudanca_area(Player* player) {
-    if (player->area == AREA_1 && player->x >= LEVEL_WIDTH - PLAYER_W - 10) {
-        player->area = AREA_2;
-        player->x = 100.0;
-        camera_x = 0.0;
-    }
-
-    if (player->area == AREA_2 && player->x < 0) {
-        player->x = 0;
-    }
+void check_area_change(Player* player) {
+    if (player->x < 0) player->x = 0;
+    if (player->x + PLAYER_W > LEVEL_WIDTH) player->x = LEVEL_WIDTH - PLAYER_W;
 }
 
-bool carregar_prologo() {
-    prologo_imagens[0] = al_load_bitmap("./assets/prologo1.png");
-    if (!prologo_imagens[0]) {
-        fprintf(stderr, "Nao foi possivel carregar prologo1.png\n");
+bool load_prologue() {
+    prologue_images[0] = al_load_bitmap("./assets/prologo1.png");
+    if (!prologue_images[0]) {
         return false;
     }
 
-    prologo_imagens[1] = al_load_bitmap("./assets/prologo2.png");
-    if (!prologo_imagens[1]) {
-        fprintf(stderr, "Nao foi possivel carregar prologo2.png\n");
+    prologue_images[1] = al_load_bitmap("./assets/prologo2.png");
+    if (!prologue_images[1]) {
         return false;
     }
 
-    prologo_imagens[2] = al_load_bitmap("./assets/prologo3.png");
-    if (!prologo_imagens[2]) {
-        fprintf(stderr, "Nao foi possivel carregar prologo3.png\n");
+    prologue_images[2] = al_load_bitmap("./assets/prologo3.png");
+    if (!prologue_images[2]) {
         return false;
     }
 
-    prologo_imagens[3] = al_load_bitmap("./assets/prologo4.png");
-    if (!prologo_imagens[3]) {
-        fprintf(stderr, "Nao foi possivel carregar prologo4.png\n");
+    prologue_images[3] = al_load_bitmap("./assets/prologo4.png");
+    if (!prologue_images[3]) {
         return false;
     }
 
-    prologo_imagens[4] = al_load_bitmap("./assets/prologo5.png");
-    if (!prologo_imagens[4]) {
-        fprintf(stderr, "Nao foi possivel carregar prologo5.png\n");
+    prologue_images[4] = al_load_bitmap("./assets/prologo5.png");
+    if (!prologue_images[4]) {
         return false;
     }
 
     return true;
 }
 
-bool carregar_game_over() {
+bool load_game_over() {
     game_over_bitmap = al_load_bitmap("./assets/game_over.png");
     if (!game_over_bitmap) {
-        fprintf(stderr, "Nao foi possivel carregar game_over.png\n");
         return false;
     }
 
     end_bitmap = al_load_bitmap("./assets/end.png");
     if (!end_bitmap) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar end.png\n");
         end_bitmap = NULL;
     }
 
     return true;
 }
 
-bool carregar_player_death_sprite(Player* player) {
+bool load_player_death_sprite(Player* player) {
     ALLEGRO_BITMAP* death_original = al_load_bitmap("./assets/death.png");
     if (!death_original) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar death.png\n");
         player->death_sprite = NULL;
         return false;
     }
 
-    player->death_sprite = criar_sprite_escalado(death_original, PLAYER_SCALE);
+    player->death_sprite = create_scaled_sprite(death_original, PLAYER_SCALE);
     al_destroy_bitmap(death_original);
 
     if (!player->death_sprite) {
-        fprintf(stderr, "Erro ao criar sprite de morte escalado\n");
         return false;
     }
 
     return true;
 }
 
-bool carregar_areas() {
+bool load_areas() {
     area1_background = al_load_bitmap("./assets/phase.png");
-    area2_background = al_load_bitmap("./assets/phase2.png");
-
     ground1_bitmap = al_load_bitmap("./assets/ground1.png");
-    ground2_bitmap = al_load_bitmap("./assets/ground2.png");
 
-    if (!area1_background || !area2_background || !ground1_bitmap || !ground2_bitmap) {
-        fprintf(stderr, "Erro ao carregar fundos das areas ou grounds\n");
+    if (!area1_background || !ground1_bitmap) {
         return false;
     }
     return true;
 }
 
-bool carregar_botoes() {
+bool load_buttons() {
     play_button_normal = al_load_bitmap("./assets/button_play.png");
     if (!play_button_normal) {
-        fprintf(stderr, "Erro ao carregar button_play.png\n");
         return false;
     }
 
@@ -686,52 +658,46 @@ bool carregar_botoes() {
     return true;
 }
 
-bool carregar_mouse_sprite() {
+bool load_mouse_sprite() {
     mouse_sprite = al_load_bitmap("./assets/mouse.png");
     if (!mouse_sprite) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar mouse.png, usando cursor padrão\n");
         return false;
     }
     return true;
 }
 
-bool carregar_sprites_vidas() {
+bool load_hearts_sprites() {
     heart_full = al_load_bitmap("./assets/heart1.png");
     if (!heart_full) {
-        fprintf(stderr, "Erro ao carregar heart1.png\n");
         return false;
     }
 
     heart_empty = al_load_bitmap("./assets/heart2.png");
     if (!heart_empty) {
-        fprintf(stderr, "Erro ao carregar heart2.png\n");
         return false;
     }
 
     return true;
 }
 
-bool carregar_sprites_dicas() {
-    dica_icon = al_load_bitmap("./assets/tip.png");
-    if (!dica_icon) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar tip.png\n");
+bool load_tip_sprites() {
+    tip_icon = al_load_bitmap("./assets/tip.png");
+    if (!tip_icon) {
         return false;
     }
 
-    dica_icon_small = al_load_bitmap("./assets/tip.png");
-    if (!dica_icon_small) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar tip.png para HUD\n");
-        return false;
+    tip_icon_small = al_load_bitmap("./assets/tip.png");
+    if (!tip_icon_small) {
+        tip_icon_small = tip_icon;
     }
 
-    for (int i = 0; i < MAX_DICAS; i++) {
+    for (int i = 0; i < MAX_TIPS; i++) {
         char filename[50];
         sprintf_s(filename, sizeof(filename), "./assets/tip%d.png", i + 1);
-        dica_images[i] = al_load_bitmap(filename);
-        if (!dica_images[i]) {
-            fprintf(stderr, "Aviso: Nao foi possivel carregar %s\n", filename);
-            dica_images[i] = al_create_bitmap(400, 300);
-            al_set_target_bitmap(dica_images[i]);
+        tip_images[i] = al_load_bitmap(filename);
+        if (!tip_images[i]) {
+            tip_images[i] = al_create_bitmap(400, 300);
+            al_set_target_bitmap(tip_images[i]);
             al_clear_to_color(al_map_rgb(50, 50, 100));
             ALLEGRO_FONT* fallback_font = al_load_ttf_font("./assets/pirulen.ttf", 24, 0);
             if (fallback_font) {
@@ -758,16 +724,16 @@ bool carregar_sprites_dicas() {
     return true;
 }
 
-void liberar_prologo() {
+void destroy_prologue() {
     for (int i = 0; i < 5; i++) {
-        if (prologo_imagens[i]) {
-            al_destroy_bitmap(prologo_imagens[i]);
-            prologo_imagens[i] = NULL;
+        if (prologue_images[i]) {
+            al_destroy_bitmap(prologue_images[i]);
+            prologue_images[i] = NULL;
         }
     }
 }
 
-void liberar_game_over() {
+void destroy_game_over() {
     if (game_over_bitmap) {
         al_destroy_bitmap(game_over_bitmap);
         game_over_bitmap = NULL;
@@ -778,33 +744,25 @@ void liberar_game_over() {
     }
 }
 
-void liberar_player_death_sprite(Player* player) {
+void destroy_player_death_sprite(Player* player) {
     if (player->death_sprite) {
         al_destroy_bitmap(player->death_sprite);
         player->death_sprite = NULL;
     }
 }
 
-void liberar_areas() {
+void destroy_areas() {
     if (area1_background) {
         al_destroy_bitmap(area1_background);
         area1_background = NULL;
-    }
-    if (area2_background) {
-        al_destroy_bitmap(area2_background);
-        area2_background = NULL;
     }
     if (ground1_bitmap) {
         al_destroy_bitmap(ground1_bitmap);
         ground1_bitmap = NULL;
     }
-    if (ground2_bitmap) {
-        al_destroy_bitmap(ground2_bitmap);
-        ground2_bitmap = NULL;
-    }
 }
 
-void liberar_botoes() {
+void destroy_buttons() {
     if (play_button_normal) {
         al_destroy_bitmap(play_button_normal);
         play_button_normal = NULL;
@@ -815,14 +773,14 @@ void liberar_botoes() {
     }
 }
 
-void liberar_mouse_sprite() {
+void destroy_mouse_sprite() {
     if (mouse_sprite) {
         al_destroy_bitmap(mouse_sprite);
         mouse_sprite = NULL;
     }
 }
 
-void liberar_sprites_vidas() {
+void destroy_heart_sprites() {
     if (heart_full) {
         al_destroy_bitmap(heart_full);
         heart_full = NULL;
@@ -833,18 +791,18 @@ void liberar_sprites_vidas() {
     }
 }
 
-void avancar_prologo(GameState* game_state) {
-    prologo_atual++;
-    if (prologo_atual >= 5) {
+void advance_prologue(GameState* game_state) {
+    prologue_index++;
+    if (prologue_index >= 5) {
         *game_state = MENU;
-        prologo_atual = 0;
+        prologue_index = 0;
     }
     else {
-        tempo_prologo_inicio = al_get_time();
+        prologue_start_time = al_get_time();
     }
 }
 
-void desenhar_mouse() {
+void draw_mouse() {
     if (mouse_visible && mouse_sprite) {
         int sprite_w = al_get_bitmap_width(mouse_sprite);
         int sprite_h = al_get_bitmap_height(mouse_sprite);
@@ -852,14 +810,14 @@ void desenhar_mouse() {
     }
 }
 
-void desenhar_vidas(Player* player) {
+void draw_hearts(Player* player) {
     int heart_size = 40;
     int spacing = 10;
     int start_x = 10;
     int start_y = 50;
 
-    for (int i = 0; i < MAX_VIDAS; i++) {
-        ALLEGRO_BITMAP* heart_bitmap = (i < player->vidas) ? heart_full : heart_empty;
+    for (int i = 0; i < MAX_LIVES; i++) {
+        ALLEGRO_BITMAP* heart_bitmap = (i < player->lives) ? heart_full : heart_empty;
         if (heart_bitmap) {
             al_draw_scaled_bitmap(heart_bitmap,
                 0, 0,
@@ -873,57 +831,57 @@ void desenhar_vidas(Player* player) {
     }
 }
 
-void desenhar_hud_dicas(Player* player, ALLEGRO_FONT* font) {
+void draw_tip_hud(Player* player, ALLEGRO_FONT* font) {
     int icon_size = 30;
     int start_x = SCREEN_W - 150;
     int start_y = 10;
 
-    if (dica_icon_small) {
-        al_draw_scaled_bitmap(dica_icon_small,
+    if (tip_icon_small) {
+        al_draw_scaled_bitmap(tip_icon_small,
             0, 0,
-            al_get_bitmap_width(dica_icon_small),
-            al_get_bitmap_height(dica_icon_small),
+            al_get_bitmap_width(tip_icon_small),
+            al_get_bitmap_height(tip_icon_small),
             start_x, start_y,
             icon_size, icon_size, 0);
     }
 
-    char contador_text[20];
-    sprintf_s(contador_text, sizeof(contador_text), "%d/%d", player->dicas_coletadas, MAX_DICAS);
-    al_draw_text(font, al_map_rgb(255, 255, 255), start_x + icon_size + 10, start_y + 5, 0, contador_text);
+    char counter_text[20];
+    sprintf_s(counter_text, sizeof(counter_text), "%d/%d", player->tips_collected, MAX_TIPS);
+    al_draw_text(font, al_map_rgb(255, 255, 255), start_x + icon_size + 10, start_y + 5, 0, counter_text);
 }
 
-void desenhar_dica_tela(Player* player, ALLEGRO_FONT* font) {
-    if (mostrando_dica && dica_atual_tela < player->dicas_coletadas) {
+void draw_tip_screen(Player* player, ALLEGRO_FONT* font) {
+    if (showing_tip && current_tip_index < player->tips_collected) {
         al_draw_filled_rectangle(0, 0, SCREEN_W, SCREEN_H, al_map_rgba(0, 0, 0, 200));
 
-        ALLEGRO_BITMAP* dica_atual = dica_images[dica_atual_tela];
-        if (dica_atual) {
-            int img_w = al_get_bitmap_width(dica_atual);
-            int img_h = al_get_bitmap_height(dica_atual);
-            float scale = DICA_SCALE;
+        ALLEGRO_BITMAP* tip_current = tip_images[current_tip_index];
+        if (tip_current) {
+            int img_w = al_get_bitmap_width(tip_current);
+            int img_h = al_get_bitmap_height(tip_current);
+            float scale = TIP_SCALE;
             float scaled_w = img_w * scale;
             float scaled_h = img_h * scale;
             float x = (SCREEN_W - scaled_w) / 2.0f;
             float y = (SCREEN_H - scaled_h) / 2.0f;
 
-            al_draw_scaled_bitmap(dica_atual,
+            al_draw_scaled_bitmap(tip_current,
                 0, 0, img_w, img_h,
                 x, y, scaled_w, scaled_h, 0);
 
-            if (player->dicas_coletadas > 1) {
+            if (player->tips_collected > 1) {
                 float btn_y = y + scaled_h + 20;
 
-                if (dica_atual_tela > 0 && prev_button) {
+                if (current_tip_index > 0 && prev_button) {
                     al_draw_bitmap(prev_button, x - 60, btn_y, 0);
                 }
 
-                if (dica_atual_tela < player->dicas_coletadas - 1 && next_button) {
+                if (current_tip_index < player->tips_collected - 1 && next_button) {
                     al_draw_bitmap(next_button, x + scaled_w + 10, btn_y, 0);
                 }
 
-                char pagina_text[20];
-                sprintf_s(pagina_text, sizeof(pagina_text), "%d/%d", dica_atual_tela + 1, player->dicas_coletadas);
-                al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_W / 2, btn_y + 15, ALLEGRO_ALIGN_CENTER, pagina_text);
+                char page_text[20];
+                sprintf_s(page_text, sizeof(page_text), "%d/%d", current_tip_index + 1, player->tips_collected);
+                al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_W / 2, btn_y + 15, ALLEGRO_ALIGN_CENTER, page_text);
             }
 
             al_draw_text(font, al_map_rgb(255, 255, 255), SCREEN_W / 2, SCREEN_H - 50, ALLEGRO_ALIGN_CENTER, "Clique fora da dica para fechar");
@@ -931,46 +889,46 @@ void desenhar_dica_tela(Player* player, ALLEGRO_FONT* font) {
     }
 }
 
-void desenhar_dicas_mundo() {
-    for (int i = 0; i < MAX_DICAS; i++) {
-        if (!dicas[i].coletada && dica_icon) {
-            al_draw_bitmap(dica_icon, dicas[i].x - camera_x, dicas[i].y, 0);
+void draw_tips_world() {
+    for (int i = 0; i < MAX_TIPS; i++) {
+        if (!tips[i].collected && tip_icon) {
+            al_draw_bitmap(tip_icon, tips[i].x - camera_x, tips[i].y, 0);
         }
     }
 }
 
-bool verificar_colisao(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2) {
+bool check_collision(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2) {
     return (x1 < x2 + w2 &&
         x1 + w1 > x2 &&
         y1 < y2 + h2 &&
         y1 + h1 > y2);
 }
 
-void verificar_spawn_enemys(Player* player) {
-    for (int i = 0; i < MAX_ENEMYS; i++) {
-        if (!enemys[i].spawnado && enemys[i].area == player->area) {
-            if (enemys[i].x - camera_x < SCREEN_W + 200) {
-                enemys[i].ativo = true;
-                enemys[i].spawnado = true;
+void check_enemy_spawn(Player* player) {
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (!enemies[i].spawned && enemies[i].area == player->area) {
+            if (enemies[i].x - camera_x < SCREEN_W + 200) {
+                enemies[i].active = true;
+                enemies[i].spawned = true;
             }
         }
     }
 }
 
-void verificar_coleta_dicas(Player* player, GameState* game_state) {
-    for (int i = 0; i < MAX_DICAS; i++) {
-        if (!dicas[i].coletada && dicas[i].area == player->area) {
-            float dica_w = dica_icon ? al_get_bitmap_width(dica_icon) : 32;
-            float dica_h = dica_icon ? al_get_bitmap_height(dica_icon) : 32;
+void check_tip_collection(Player* player, GameState* game_state) {
+    for (int i = 0; i < MAX_TIPS; i++) {
+        if (!tips[i].collected && tips[i].area == player->area) {
+            float tip_w = tip_icon ? al_get_bitmap_width(tip_icon) : 32;
+            float tip_h = tip_icon ? al_get_bitmap_height(tip_icon) : 32;
 
-            if (verificar_colisao(player->x, player->y, PLAYER_W, PLAYER_H,
-                dicas[i].x, dicas[i].y, dica_w, dica_h)) {
-                dicas[i].coletada = true;
-                player->dicas_coletadas++;
-                mostrando_dica = true;
-                dica_atual_tela = player->dicas_coletadas - 1;
+            if (check_collision(player->x, player->y, PLAYER_W, PLAYER_H,
+                tips[i].x, tips[i].y, tip_w, tip_h)) {
+                tips[i].collected = true;
+                player->tips_collected++;
+                showing_tip = true;
+                current_tip_index = player->tips_collected - 1;
                 if (game_state) {
-                    *game_state = MOSTRANDO_DICA;
+                    *game_state = SHOWING_TIP;
                 }
                 return;
             }
@@ -978,58 +936,54 @@ void verificar_coleta_dicas(Player* player, GameState* game_state) {
     }
 }
 
-void atualizar_enemys(Player* player) {
-    if (player->area == AREA_2) {
-        return;
-    }
+void update_enemies(Player* player) {
+    check_enemy_spawn(player);
 
-    verificar_spawn_enemys(player);
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemies[i].active && enemies[i].spawned && enemies[i].area == player->area) {
 
-    for (int i = 0; i < MAX_ENEMYS; i++) {
-        if (enemys[i].ativo && enemys[i].spawnado && enemys[i].area == player->area) {
+            enemies[i].x += ENEMY_SPEED * enemies[i].direction;
 
-            enemys[i].x += ENEMY_VELOCIDADE * enemys[i].direcao;
-
-            if (enemys[i].x + ENEMY_W < 0) {
-                enemys[i].x = LEVEL_WIDTH - ENEMY_W;
+            if (enemies[i].x + ENEMY_W < 0) {
+                enemies[i].x = LEVEL_WIDTH - ENEMY_W;
             }
-            else if (enemys[i].x > LEVEL_WIDTH) {
-                enemys[i].x = 0 - ENEMY_W;
+            else if (enemies[i].x > LEVEL_WIDTH) {
+                enemies[i].x = 0 - ENEMY_W;
             }
 
-            for (int j = 0; j < MAX_ENEMYS; j++) {
-                if (i != j && enemys[j].ativo && enemys[j].spawnado && enemys[j].area == player->area) {
-                    if (verificar_colisao(enemys[i].x, enemys[i].y, ENEMY_W, ENEMY_H,
-                        enemys[j].x, enemys[j].y, ENEMY_W, ENEMY_H)) {
-                        enemys[i].direcao *= -1;
-                        enemys[j].direcao *= -1;
-                        enemys[i].x += ENEMY_VELOCIDADE * enemys[i].direcao * 2;
-                        enemys[j].x += ENEMY_VELOCIDADE * enemys[j].direcao * 2;
+            for (int j = 0; j < MAX_ENEMIES; j++) {
+                if (i != j && enemies[j].active && enemies[j].spawned && enemies[j].area == player->area) {
+                    if (check_collision(enemies[i].x, enemies[i].y, ENEMY_W, ENEMY_H,
+                        enemies[j].x, enemies[j].y, ENEMY_W, ENEMY_H)) {
+                        enemies[i].direction *= -1;
+                        enemies[j].direction *= -1;
+                        enemies[i].x += ENEMY_SPEED * enemies[i].direction * 2;
+                        enemies[j].x += ENEMY_SPEED * enemies[j].direction * 2;
                         break;
                     }
                 }
             }
 
-            enemys[i].contador_frame++;
-            if (enemys[i].contador_frame >= ENEMY_FRAME_DELAY) {
-                enemys[i].frame_atual = (enemys[i].frame_atual + 1) % MAX_ENEMY_FRAMES;
-                enemys[i].contador_frame = 0;
+            enemies[i].frame_counter++;
+            if (enemies[i].frame_counter >= ENEMY_FRAME_DELAY) {
+                enemies[i].current_frame = (enemies[i].current_frame + 1) % MAX_ENEMY_FRAMES;
+                enemies[i].frame_counter = 0;
             }
 
-            if (verificar_colisao(player->x, player->y, PLAYER_W, PLAYER_H,
-                enemys[i].x, enemys[i].y, ENEMY_W, ENEMY_H)) {
+            if (check_collision(player->x, player->y, PLAYER_W, PLAYER_H,
+                enemies[i].x, enemies[i].y, ENEMY_W, ENEMY_H)) {
 
                 if (player->velocity_y > 0 &&
-                    player->y + PLAYER_H < enemys[i].y + ENEMY_H / 2) {
-                    enemys[i].ativo = false;
+                    player->y + PLAYER_H < enemies[i].y + ENEMY_H / 2) {
+                    enemies[i].active = false;
                     player->velocity_y = -JUMP_FORCE / 2;
                 }
-                else if (!player->invencivel && !player->morto) {
-                    player->vidas--;
-                    player->invencivel = true;
-                    player->tempo_invencivel = al_get_time();
+                else if (!player->invincible && !player->dead) {
+                    player->lives--;
+                    player->invincible = true;
+                    player->invincible_time = al_get_time();
 
-                    if (player->x < enemys[i].x) {
+                    if (player->x < enemies[i].x) {
                         player->x -= 50;
                     }
                     else {
@@ -1039,10 +993,10 @@ void atualizar_enemys(Player* player) {
                     if (player->x < 0) player->x = 0;
                     if (player->x > LEVEL_WIDTH - PLAYER_W) player->x = LEVEL_WIDTH - PLAYER_W;
 
-                    if (player->vidas <= 0) {
-                        player->vidas = 0;
-                        player->morto = true;
-                        player->tempo_morte = al_get_time();
+                    if (player->lives <= 0) {
+                        player->lives = 0;
+                        player->dead = true;
+                        player->death_time = al_get_time();
                     }
                 }
             }
@@ -1050,58 +1004,58 @@ void atualizar_enemys(Player* player) {
     }
 }
 
-void desenhar_enemys(Player* player) {
-    for (int i = 0; i < MAX_ENEMYS; i++) {
-        if (enemys[i].ativo && enemys[i].spawnado && enemys[i].area == player->area) {
-            ALLEGRO_BITMAP* sprite_atual = enemys[i].sprites[enemys[i].frame_atual];
-            if (sprite_atual) {
-                int flip_flag = (enemys[i].direcao == 1) ? ALLEGRO_FLIP_HORIZONTAL : 0;
-                al_draw_bitmap(sprite_atual, enemys[i].x - camera_x, enemys[i].y, flip_flag);
+void draw_enemies(Player* player) {
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemies[i].active && enemies[i].spawned && enemies[i].area == player->area) {
+            ALLEGRO_BITMAP* sprite_current = enemies[i].sprites[enemies[i].current_frame];
+            if (sprite_current) {
+                int flip_flag = (enemies[i].direction == 1) ? ALLEGRO_FLIP_HORIZONTAL : 0;
+                al_draw_bitmap(sprite_current, enemies[i].x - camera_x, enemies[i].y, flip_flag);
             }
         }
     }
 }
 
-bool verificar_clique_botao_dica(int mouse_x, int mouse_y, Player* player) {
-    if (!mostrando_dica || player->dicas_coletadas <= 1) return false;
+bool check_click_tip_button(int mouse_x, int mouse_y, Player* player) {
+    if (!showing_tip || player->tips_collected <= 1) return false;
 
-    ALLEGRO_BITMAP* dica_atual = dica_images[dica_atual_tela];
-    if (!dica_atual) return false;
+    ALLEGRO_BITMAP* tip_current = tip_images[current_tip_index];
+    if (!tip_current) return false;
 
-    int img_w = al_get_bitmap_width(dica_atual);
-    int img_h = al_get_bitmap_height(dica_atual);
-    float scale = DICA_SCALE;
+    int img_w = al_get_bitmap_width(tip_current);
+    int img_h = al_get_bitmap_height(tip_current);
+    float scale = TIP_SCALE;
     float scaled_w = img_w * scale;
     float scaled_h = img_h * scale;
     float x = (SCREEN_W - scaled_w) / 2.0f;
     float y = (SCREEN_H - scaled_h) / 2.0f;
     float btn_y = y + scaled_h + 20;
 
-    if (dica_atual_tela > 0 && mouse_x >= x - 60 && mouse_x <= x - 10 &&
+    if (current_tip_index > 0 && mouse_x >= x - 60 && mouse_x <= x - 10 &&
         mouse_y >= btn_y && mouse_y <= btn_y + 50) {
-        dica_atual_tela--;
+        current_tip_index--;
         return true;
     }
 
-    if (dica_atual_tela < player->dicas_coletadas - 1 &&
+    if (current_tip_index < player->tips_collected - 1 &&
         mouse_x >= x + scaled_w + 10 && mouse_x <= x + scaled_w + 60 &&
         mouse_y >= btn_y && mouse_y <= btn_y + 50) {
-        dica_atual_tela++;
+        current_tip_index++;
         return true;
     }
 
     return false;
 }
 
-bool verificar_clique_fora_dica(int mouse_x, int mouse_y) {
-    if (!mostrando_dica) return false;
+bool check_click_outside_tip(int mouse_x, int mouse_y) {
+    if (!showing_tip) return false;
 
-    ALLEGRO_BITMAP* dica_atual = dica_images[dica_atual_tela];
-    if (!dica_atual) return false;
+    ALLEGRO_BITMAP* tip_current = tip_images[current_tip_index];
+    if (!tip_current) return false;
 
-    int img_w = al_get_bitmap_width(dica_atual);
-    int img_h = al_get_bitmap_height(dica_atual);
-    float scale = DICA_SCALE;
+    int img_w = al_get_bitmap_width(tip_current);
+    int img_h = al_get_bitmap_height(tip_current);
+    float scale = TIP_SCALE;
     float scaled_w = img_w * scale;
     float scaled_h = img_h * scale;
     float x = (SCREEN_W - scaled_w) / 2.0f;
@@ -1126,85 +1080,67 @@ int main(void) {
     ALLEGRO_DISPLAY* display = al_create_display(SCREEN_W, SCREEN_H);
     ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
     ALLEGRO_FONT* font = al_load_ttf_font("./assets/pirulen.ttf", 32, 0);
-    ALLEGRO_FONT* font_pequena = al_load_ttf_font("./assets/pirulen.ttf", 24, 0);
+    ALLEGRO_FONT* font_small = al_load_ttf_font("./assets/pirulen.ttf", 24, 0);
 
     al_hide_mouse_cursor(display);
 
     ALLEGRO_BITMAP* player_frames_right[MAX_FRAMES] = { NULL };
     ALLEGRO_BITMAP* player_jump_frames_right[MAX_JUMP_FRAMES] = { NULL };
 
-    int frames_carregados = 0;
+    int frames_loaded = 0;
     char filename[25];
     for (int i = 0; i < MAX_FRAMES; i++) {
         sprintf_s(filename, sizeof(filename), "./assets/knight%d.png", i + 1);
         player_frames_right[i] = al_load_bitmap(filename);
         if (!player_frames_right[i]) {
-            printf("Aviso: Nao foi possivel carregar o arquivo %s (carregados %d frames)\n", filename, i);
-            frames_carregados = i;
+            frames_loaded = i;
             break;
         }
-        frames_carregados++;
+        frames_loaded++;
     }
 
-    if (frames_carregados == 0) {
+    if (frames_loaded == 0) {
         fprintf(stderr, "Erro: Nao foi possivel carregar nenhum sprite do knight\n");
         return -1;
     }
 
-    printf("Carregados %d frames do knight\n", frames_carregados);
-
-    int jump_frames_carregados = 0;
+    int jump_frames_loaded = 0;
     for (int i = 0; i < MAX_JUMP_FRAMES; i++) {
         sprintf_s(filename, sizeof(filename), "./assets/jump%d.png", i + 1);
         player_jump_frames_right[i] = al_load_bitmap(filename);
         if (!player_jump_frames_right[i]) {
-            printf("Aviso: Nao foi possivel carregar o arquivo %s (carregados %d frames de pulo)\n", filename, i);
-            jump_frames_carregados = i;
+            jump_frames_loaded = i;
             break;
         }
-        jump_frames_carregados++;
+        jump_frames_loaded++;
     }
 
-    if (jump_frames_carregados == 0) {
-        printf("Aviso: Nao foi possivel carregar sprites de pulo, usando sprites normais\n");
-    }
-    else {
-        printf("Carregados %d frames de pulo\n", jump_frames_carregados);
-    }
-
-    if (!criar_sprites_escalados(player_frames_right, player_frames_scaled, frames_carregados, PLAYER_SCALE)) {
+    if (!create_scaled_sprites(player_frames_right, player_frames_scaled, frames_loaded, PLAYER_SCALE)) {
         fprintf(stderr, "Erro ao criar sprites escalados\n");
         return -1;
     }
 
-    if (jump_frames_carregados > 0) {
-        if (!criar_sprites_escalados(player_jump_frames_right, player_jump_frames_scaled, jump_frames_carregados, PLAYER_SCALE)) {
-            fprintf(stderr, "Erro ao criar sprites de pulo escalados\n");
+    if (jump_frames_loaded > 0) {
+        if (!create_scaled_sprites(player_jump_frames_right, player_jump_frames_scaled, jump_frames_loaded, PLAYER_SCALE)) {
         }
     }
 
-    if (!carregar_mouse_sprite()) {
+    if (!load_mouse_sprite()) {
         al_show_mouse_cursor(display);
         mouse_visible = false;
     }
 
-    if (!carregar_sprites_vidas()) {
+    if (!load_hearts_sprites()) {
         fprintf(stderr, "Erro ao carregar sprites de vidas\n");
         return -1;
     }
 
-    if (!carregar_sprites_dicas()) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar alguns sprites de dicas\n");
-    }
+    load_tip_sprites();
 
-    if (!carregar_porta()) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar recursos da porta\n");
-    }
-    inicializar_porta();
+    load_door();
+    init_door();
 
-    if (!carregar_game_over()) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar game_over.png\n");
-    }
+    load_game_over();
 
     ALLEGRO_BITMAP* title_logo_bitmap = al_load_bitmap("./assets/title_logo.png");
     ALLEGRO_BITMAP* menu_background_bitmap = al_load_bitmap("./assets/menu_background.png");
@@ -1214,22 +1150,15 @@ int main(void) {
         return -1;
     }
 
-    GameState game_state;
-    if (carregar_prologo()) {
-        game_state = PROLOGO;
-        tempo_prologo_inicio = al_get_time();
-    }
-    else {
-        game_state = MENU;
-    }
+    // Carrega as imagens do prólogo, mas NÃO inicia o jogo em PROLOGUE.
+    bool prologue_loaded = load_prologue();
+    GameState game_state = MENU;
 
-    if (!carregar_areas()) {
+    if (!load_areas()) {
         return -1;
     }
 
-    if (!carregar_botoes()) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar botoes, usando fallback\n");
-    }
+    load_buttons();
 
     Player player = {
         100.0,
@@ -1237,7 +1166,7 @@ int main(void) {
         0.0,
         false,
         AREA_1,
-        MAX_VIDAS,
+        MAX_LIVES,
         false,
         0.0,
         false,
@@ -1246,13 +1175,11 @@ int main(void) {
         0
     };
 
-    if (!carregar_player_death_sprite(&player)) {
-        fprintf(stderr, "Aviso: Nao foi possivel carregar sprite de morte do player\n");
-    }
+    load_player_death_sprite(&player);
 
-    inicializar_enemys();
+    init_enemies();
 
-    inicializar_dicas();
+    init_tips();
 
     int direction = 1;
     int current_frame = 0;
@@ -1265,11 +1192,11 @@ int main(void) {
     int jump_frame_index = 0;
     bool showing_jump_animation = false;
 
-    if (frames_carregados >= 9) {
+    if (frames_loaded >= 9) {
         total_walking_frames = 8;
     }
     else {
-        total_walking_frames = frames_carregados - 1;
+        total_walking_frames = frames_loaded - 1;
         if (total_walking_frames < 1) total_walking_frames = 1;
     }
 
@@ -1303,12 +1230,12 @@ int main(void) {
     al_register_event_source(event_queue, al_get_mouse_event_source());
 
     al_start_timer(timer);
-    while (game_state != SAINDO) {
+    while (game_state != EXITING) {
         ALLEGRO_EVENT event;
         al_wait_for_event(event_queue, &event);
 
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            game_state = SAINDO;
+            game_state = EXITING;
         }
 
         if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
@@ -1316,22 +1243,28 @@ int main(void) {
             mouse_y = event.mouse.y;
         }
 
-        if (game_state == PROLOGO) {
+        if (game_state == PROLOGUE) {
             if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (event.keyboard.keycode == ALLEGRO_KEY_SPACE) {
-                    game_state = MENU;
-                    prologo_atual = 0;
+                    // Ao pular o prólogo, inicia o jogo
+                    game_state = PLAYING;
+                    reset_game(&player);
+                    prologue_index = 0;
+                    clear_keys(keys);
                 }
             }
 
-            if (al_get_time() - tempo_prologo_inicio >= 10.0) {
-                prologo_atual++;
-                if (prologo_atual >= 5) {
-                    game_state = MENU;
-                    prologo_atual = 0;
+            if (al_get_time() - prologue_start_time >= 10.0) {
+                prologue_index++;
+                if (prologue_index >= 5) {
+                    // Ao terminar o prólogo, inicia o jogo
+                    game_state = PLAYING;
+                    reset_game(&player);
+                    prologue_index = 0;
+                    clear_keys(keys);
                 }
                 else {
-                    tempo_prologo_inicio = al_get_time();
+                    prologue_start_time = al_get_time();
                 }
             }
         }
@@ -1350,12 +1283,20 @@ int main(void) {
                 }
             }
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN && play_button.hovered) {
-                game_state = JOGANDO;
-                reset_game(&player);
+                // Ao clicar Play: se o prólogo foi carregado, mostra prólogo primeiro.
+                if (prologue_loaded) {
+                    game_state = PROLOGUE;
+                    prologue_index = 0;
+                    prologue_start_time = al_get_time();
+                }
+                else {
+                    game_state = PLAYING;
+                    reset_game(&player);
+                }
                 clear_keys(keys);
             }
         }
-        else if (game_state == JOGANDO) {
+        else if (game_state == PLAYING) {
             if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
                     game_state = MENU;
@@ -1366,21 +1307,21 @@ int main(void) {
 
                 if ((event.keyboard.keycode == ALLEGRO_KEY_SPACE ||
                     event.keyboard.keycode == ALLEGRO_KEY_W) &&
-                    !player.is_jumping && !player.morto) {
+                    !player.is_jumping && !player.dead) {
 
-                    if (jogador_perto_da_porta(&player)) {
-                        if (!porta.aberta) {
-                            porta.mostrando_dialogo = true;
-                            porta.aguardando_resposta = true;
-                            porta.pergunta_atual = 0;
-                            porta.alternativa_selecionada = -1;
-                            porta.fala_atual = FALA_PERGUNTA1;
-                            porta.tempo_feedback_inicio = 0.0;
+                    if (player_near_door(&player)) {
+                        if (!door.open) {
+                            door.showing_dialog = true;
+                            door.waiting_answer = true;
+                            door.current_question = 0;
+                            door.selected_option = -1;
+                            door.current_speech = SPEECH_QUESTION1;
+                            door.feedback_start_time = 0.0;
                             clear_keys(keys);
                         }
                         else {
                             game_state = END_SCREEN;
-                            tempo_end_inicio = al_get_time();
+                            end_start_time = al_get_time();
                             clear_keys(keys);
                         }
                     }
@@ -1397,7 +1338,7 @@ int main(void) {
             }
 
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                if (porta.mostrando_dialogo && porta.aguardando_resposta) {
+                if (door.showing_dialog && door.waiting_answer) {
                     int dlg_w = 700;
                     int dlg_h = 300;
                     int dlg_x = (SCREEN_W - dlg_w) / 2;
@@ -1408,20 +1349,20 @@ int main(void) {
                     int alt_h = 40;
                     int alt_spacing = 10;
 
-                    for (int i = 0; i < MAX_ALTERNATIVAS; i++) {
+                    for (int i = 0; i < MAX_OPTIONS; i++) {
                         int ay = alt_start_y + i * (alt_h + alt_spacing);
                         if (mouse_x >= alt_x && mouse_x <= alt_x + alt_w &&
                             mouse_y >= ay && mouse_y <= ay + alt_h) {
-                            if (i == perguntas[porta.pergunta_atual].resposta_correta) {
-                                porta.fala_atual = FALA_RESPOSTA_CERTA;
-                                porta.aguardando_resposta = false;
-                                porta.tempo_feedback_inicio = al_get_time();
-                                if (porta.fase_abertura == 0) porta.fase_abertura = 1;
+                            if (i == questions[door.current_question].correct_answer) {
+                                door.current_speech = SPEECH_CORRECT_ANSWER;
+                                door.waiting_answer = false;
+                                door.feedback_start_time = al_get_time();
+                                if (door.open_phase == 0) door.open_phase = 1;
                             }
                             else {
-                                porta.fala_atual = FALA_RESPOSTA_ERRADA;
-                                porta.aguardando_resposta = false;
-                                porta.tempo_feedback_inicio = al_get_time();
+                                door.current_speech = SPEECH_WRONG_ANSWER;
+                                door.waiting_answer = false;
+                                door.feedback_start_time = al_get_time();
                             }
                             break;
                         }
@@ -1434,17 +1375,17 @@ int main(void) {
 
                     if (mouse_x >= start_x && mouse_x <= start_x + icon_size &&
                         mouse_y >= start_y && mouse_y <= start_y + icon_size &&
-                        player.dicas_coletadas > 0) {
-                        mostrando_dica = true;
-                        dica_atual_tela = 0;
-                        game_state = MOSTRANDO_DICA;
+                        player.tips_collected > 0) {
+                        showing_tip = true;
+                        current_tip_index = 0;
+                        game_state = SHOWING_TIP;
                         clear_keys(keys);
                     }
                 }
             }
 
             if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-                if (porta.mostrando_dialogo) {
+                if (door.showing_dialog) {
                     int dlg_w = 700;
                     int dlg_h = 300;
                     int dlg_x = (SCREEN_W - dlg_w) / 2;
@@ -1455,71 +1396,71 @@ int main(void) {
                     int alt_h = 40;
                     int alt_spacing = 10;
 
-                    porta.alternativa_selecionada = -1;
-                    for (int i = 0; i < MAX_ALTERNATIVAS; i++) {
+                    door.selected_option = -1;
+                    for (int i = 0; i < MAX_OPTIONS; i++) {
                         int ay = alt_start_y + i * (alt_h + alt_spacing);
                         if (mouse_x >= alt_x && mouse_x <= alt_x + alt_w &&
                             mouse_y >= ay && mouse_y <= ay + alt_h) {
-                            porta.alternativa_selecionada = i;
+                            door.selected_option = i;
                             break;
                         }
                     }
                 }
             }
         }
-        else if (game_state == MOSTRANDO_DICA) {
+        else if (game_state == SHOWING_TIP) {
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                if (verificar_clique_botao_dica(mouse_x, mouse_y, &player)) {
+                if (check_click_tip_button(mouse_x, mouse_y, &player)) {
                 }
-                else if (verificar_clique_fora_dica(mouse_x, mouse_y)) {
-                    mostrando_dica = false;
-                    game_state = JOGANDO;
+                else if (check_click_outside_tip(mouse_x, mouse_y)) {
+                    showing_tip = false;
+                    game_state = PLAYING;
                     clear_keys(keys);
                 }
             }
             if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-                    mostrando_dica = false;
-                    game_state = JOGANDO;
+                    showing_tip = false;
+                    game_state = PLAYING;
                     clear_keys(keys);
                 }
             }
         }
         else if (game_state == GAME_OVER) {
-            if (al_get_time() - tempo_game_over_inicio >= 10.0) {
+            if (al_get_time() - game_over_start_time >= 10.0) {
                 game_state = MENU;
             }
         }
         else if (game_state == END_SCREEN) {
-            if (al_get_time() - tempo_end_inicio >= 10.0) {
+            if (al_get_time() - end_start_time >= 10.0) {
                 game_state = MENU;
             }
         }
 
         if (event.type == ALLEGRO_EVENT_TIMER) {
-            if (game_state == JOGANDO) {
-                if (player.invencivel && al_get_time() - player.tempo_invencivel >= 2.0) {
-                    player.invencivel = false;
+            if (game_state == PLAYING) {
+                if (player.invincible && al_get_time() - player.invincible_time >= 2.0) {
+                    player.invincible = false;
                 }
 
-                if (player.morto && al_get_time() - player.tempo_morte >= 2.0) {
+                if (player.dead && al_get_time() - player.death_time >= 2.0) {
                     game_state = GAME_OVER;
-                    tempo_game_over_inicio = al_get_time();
+                    game_over_start_time = al_get_time();
                     continue;
                 }
 
-                if (player.morto) {
+                if (player.dead) {
                     redraw = true;
                     continue;
                 }
 
-                if (porta.fase_abertura > 0) {
-                    atualizar_abertura_porta();
+                if (door.open_phase > 0) {
+                    update_door_opening();
                 }
 
                 moving = false;
 
-                if (!porta.mostrando_dialogo) {
+                if (!door.showing_dialog) {
                     if (keys[ALLEGRO_KEY_A]) {
                         player.x -= PLAYER_SPEED;
                         direction = -1;
@@ -1536,12 +1477,12 @@ int main(void) {
                     player.y += player.velocity_y;
                     player.velocity_y += GRAVITY;
 
-                    if (showing_jump_animation && jump_frames_carregados > 0) {
+                    if (showing_jump_animation && jump_frames_loaded > 0) {
                         frame_count++;
                         if (frame_count >= FRAME_DELAY) {
                             jump_frame_index++;
-                            if (jump_frame_index >= jump_frames_carregados) {
-                                jump_frame_index = jump_frames_carregados - 1;
+                            if (jump_frame_index >= jump_frames_loaded) {
+                                jump_frame_index = jump_frames_loaded - 1;
                             }
                             frame_count = 0;
                         }
@@ -1555,9 +1496,9 @@ int main(void) {
                     }
                 }
 
-                verificar_coleta_dicas(&player, &game_state);
-                atualizar_enemys(&player);
-                verificar_mudanca_area(&player);
+                check_tip_collection(&player, &game_state);
+                update_enemies(&player);
+                check_area_change(&player);
 
                 if (!player.is_jumping) {
                     if (moving) {
@@ -1582,17 +1523,17 @@ int main(void) {
 
                 update_camera(&player);
 
-                if (porta.mostrando_dialogo && !porta.aguardando_resposta) {
+                if (door.showing_dialog && !door.waiting_answer) {
                     double now = al_get_time();
-                    if (now - porta.tempo_feedback_inicio > 1.5) {
-                        if (porta.fala_atual == FALA_RESPOSTA_CERTA) {
-                            porta.mostrando_dialogo = false;
-                            porta.aguardando_resposta = false;
+                    if (now - door.feedback_start_time > 1.5) {
+                        if (door.current_speech == SPEECH_CORRECT_ANSWER) {
+                            door.showing_dialog = false;
+                            door.waiting_answer = false;
                         }
-                        else if (porta.fala_atual == FALA_RESPOSTA_ERRADA) {
-                            porta.fala_atual = FALA_PERGUNTA1;
-                            porta.aguardando_resposta = true;
-                            porta.alternativa_selecionada = -1;
+                        else if (door.current_speech == SPEECH_WRONG_ANSWER) {
+                            door.current_speech = SPEECH_QUESTION1;
+                            door.waiting_answer = true;
+                            door.selected_option = -1;
                         }
                     }
                 }
@@ -1609,16 +1550,16 @@ int main(void) {
             redraw = false;
             al_clear_to_color(al_map_rgb(20, 20, 40));
 
-            if (game_state == PROLOGO) {
-                if (prologo_atual < 5 && prologo_imagens[prologo_atual]) {
-                    ALLEGRO_BITMAP* imagem_atual = prologo_imagens[prologo_atual];
-                    int img_w = al_get_bitmap_width(imagem_atual);
-                    int img_h = al_get_bitmap_height(imagem_atual);
+            if (game_state == PROLOGUE) {
+                if (prologue_index < 5 && prologue_images[prologue_index]) {
+                    ALLEGRO_BITMAP* image_current = prologue_images[prologue_index];
+                    int img_w = al_get_bitmap_width(image_current);
+                    int img_h = al_get_bitmap_height(image_current);
 
                     float x = (SCREEN_W - img_w) / 2.0f;
                     float y = (SCREEN_H - img_h) / 2.0f;
 
-                    al_draw_bitmap(imagem_atual, x, y, 0);
+                    al_draw_bitmap(image_current, x, y, 0);
                 }
             }
             else if (game_state == MENU) {
@@ -1638,59 +1579,59 @@ int main(void) {
 
                 draw_button(&play_button);
             }
-            else if (game_state == JOGANDO || game_state == MOSTRANDO_DICA) {
-                ALLEGRO_BITMAP* background_atual = (player.area == AREA_1) ? area1_background : area2_background;
+            else if (game_state == PLAYING || game_state == SHOWING_TIP) {
+                ALLEGRO_BITMAP* background_current = area1_background;
 
-                al_draw_scaled_bitmap(background_atual,
-                    0, 0, al_get_bitmap_width(background_atual), al_get_bitmap_height(background_atual),
+                al_draw_scaled_bitmap(background_current,
+                    0, 0, al_get_bitmap_width(background_current), al_get_bitmap_height(background_current),
                     -camera_x, 0, LEVEL_WIDTH, SCREEN_H, 0);
 
-                ALLEGRO_BITMAP* ground_atual = (player.area == AREA_1) ? ground1_bitmap : ground2_bitmap;
-                float ground_w = al_get_bitmap_width(ground_atual);
+                ALLEGRO_BITMAP* ground_current = ground1_bitmap;
+                float ground_w = al_get_bitmap_width(ground_current);
                 for (int i = 0; i * ground_w < LEVEL_WIDTH; i++) {
-                    al_draw_bitmap(ground_atual, i * ground_w - camera_x, GROUND_Y, 0);
+                    al_draw_bitmap(ground_current, i * ground_w - camera_x, GROUND_Y, 0);
                 }
 
-                desenhar_dicas_mundo();
+                draw_tips_world();
 
-                if (player.area == AREA_2) {
-                    desenhar_porta();
+                if (door.area == player.area) {
+                    draw_door();
                 }
 
-                desenhar_enemys(&player);
+                draw_enemies(&player);
 
                 ALLEGRO_BITMAP* bitmap_to_draw = NULL;
 
-                if (player.morto && player.death_sprite) {
+                if (player.dead && player.death_sprite) {
                     bitmap_to_draw = player.death_sprite;
                 }
-                else if (player.is_jumping && jump_frames_carregados > 0) {
-                    if (jump_frame_index < jump_frames_carregados && player_jump_frames_scaled[jump_frame_index]) {
+                else if (player.is_jumping && jump_frames_loaded > 0) {
+                    if (jump_frame_index < jump_frames_loaded && player_jump_frames_scaled[jump_frame_index]) {
                         bitmap_to_draw = player_jump_frames_scaled[jump_frame_index];
                     }
                 }
                 else {
-                    if (current_frame < frames_carregados && player_frames_scaled[current_frame]) {
+                    if (current_frame < frames_loaded && player_frames_scaled[current_frame]) {
                         bitmap_to_draw = player_frames_scaled[current_frame];
                     }
                 }
 
                 if (bitmap_to_draw) {
-                    int flip_flag = (player.morto ? 0 : (direction == -1) ? ALLEGRO_FLIP_HORIZONTAL : 0);
+                    int flip_flag = (player.dead ? 0 : (direction == -1) ? ALLEGRO_FLIP_HORIZONTAL : 0);
                     al_draw_bitmap(bitmap_to_draw, player.x - camera_x, player.y, flip_flag);
                 }
 
-                desenhar_vidas(&player);
+                draw_hearts(&player);
 
-                desenhar_hud_dicas(&player, font_pequena);
+                draw_tip_hud(&player, font_small);
 
                 al_draw_text(font, al_map_rgb(255, 255, 255), 10, 10, 0, "ESC para voltar");
 
-                if (game_state == MOSTRANDO_DICA) {
-                    desenhar_dica_tela(&player, font_pequena);
+                if (game_state == SHOWING_TIP) {
+                    draw_tip_screen(&player, font_small);
                 }
 
-                if (porta.mostrando_dialogo) {
+                if (door.showing_dialog) {
                     int dlg_w = 700;
                     int dlg_h = 300;
                     int dlg_x = (SCREEN_W - dlg_w) / 2;
@@ -1700,8 +1641,8 @@ int main(void) {
                     al_draw_filled_rectangle(dlg_x, dlg_y, dlg_x + dlg_w, dlg_y + dlg_h, al_map_rgb(30, 30, 60));
                     al_draw_rectangle(dlg_x, dlg_y, dlg_x + dlg_w, dlg_y + dlg_h, al_map_rgb(200, 200, 200), 2);
 
-                    Pergunta* p = &perguntas[porta.pergunta_atual];
-                    draw_wrapped_text(font_pequena, p->pergunta, dlg_x + 20, dlg_y + 20, dlg_w - 40, 3, 26, al_map_rgb(255, 255, 255));
+                    Question* p = &questions[door.current_question];
+                    draw_wrapped_text(font_small, p->question, dlg_x + 20, dlg_y + 20, dlg_w - 40, 3, 26, al_map_rgb(255, 255, 255));
 
                     int alt_x = dlg_x + 30;
                     int alt_w = dlg_w - 60;
@@ -1709,24 +1650,25 @@ int main(void) {
                     int alt_h = 40;
                     int alt_spacing = 10;
 
-                    for (int i = 0; i < MAX_ALTERNATIVAS; i++) {
+                    for (int i = 0; i < MAX_OPTIONS; i++) {
                         int ay = alt_start_y + i * (alt_h + alt_spacing);
                         ALLEGRO_COLOR bg;
-                        if (!porta.aguardando_resposta && i == perguntas[porta.pergunta_atual].resposta_correta && porta.fala_atual == FALA_RESPOSTA_CERTA) {
+                        if (!door.waiting_answer && i == questions[door.current_question].correct_answer && door.current_speech == SPEECH_CORRECT_ANSWER) {
                             bg = al_map_rgb(30, 150, 70);
-                        } else {
-                            bg = (i == porta.alternativa_selecionada) ? al_map_rgb(80, 120, 200) : al_map_rgb(60, 60, 80);
+                        }
+                        else {
+                            bg = (i == door.selected_option) ? al_map_rgb(80, 120, 200) : al_map_rgb(60, 60, 80);
                         }
                         al_draw_filled_rectangle(alt_x, ay, alt_x + alt_w, ay + alt_h, bg);
                         al_draw_rectangle(alt_x, ay, alt_x + alt_w, ay + alt_h, al_map_rgb(200, 200, 200), 1);
-                        al_draw_text(font_pequena, al_map_rgb(255, 255, 255), alt_x + 10, ay + 8, 0, p->alternativas[i]);
+                        al_draw_text(font_small, al_map_rgb(255, 255, 255), alt_x + 10, ay + 8, 0, p->options[i]);
                     }
 
-                    if (porta.fala_atual == FALA_RESPOSTA_ERRADA) {
-                        al_draw_text(font_pequena, al_map_rgb(255, 80, 80), dlg_x + dlg_w / 2, dlg_y + dlg_h - 40, ALLEGRO_ALIGN_CENTER, "Errado! Tente novamente.");
+                    if (door.current_speech == SPEECH_WRONG_ANSWER) {
+                        al_draw_text(font_small, al_map_rgb(255, 80, 80), dlg_x + dlg_w / 2, dlg_y + dlg_h - 40, ALLEGRO_ALIGN_CENTER, "Errado! Tente novamente.");
                     }
-                    else if (porta.fala_atual == FALA_RESPOSTA_CERTA) {
-                        al_draw_text(font_pequena, al_map_rgb(80, 255, 120), dlg_x + dlg_w / 2, dlg_y + dlg_h - 40, ALLEGRO_ALIGN_CENTER, "Exato! Pode passar!");
+                    else if (door.current_speech == SPEECH_CORRECT_ANSWER) {
+                        al_draw_text(font_small, al_map_rgb(80, 255, 120), dlg_x + dlg_w / 2, dlg_y + dlg_h - 40, ALLEGRO_ALIGN_CENTER, "Exato! Pode passar!");
                     }
                 }
             }
@@ -1740,7 +1682,7 @@ int main(void) {
                 }
                 else {
                     al_draw_text(font, al_map_rgb(255, 0, 0), SCREEN_W / 2, SCREEN_H / 2 - 50, ALLEGRO_ALIGN_CENTER, "GAME OVER");
-                    al_draw_text(font_pequena, al_map_rgb(255, 255, 255), SCREEN_W / 2, SCREEN_H / 2 + 50, ALLEGRO_ALIGN_CENTER, "Voltando ao menu em 10 segundos...");
+                    al_draw_text(font_small, al_map_rgb(255, 255, 255), SCREEN_W / 2, SCREEN_H / 2 + 50, ALLEGRO_ALIGN_CENTER, "Voltando ao menu em 10 segundos...");
                 }
             }
             else if (game_state == END_SCREEN) {
@@ -1753,35 +1695,35 @@ int main(void) {
                 }
                 else {
                     al_draw_text(font, al_map_rgb(255, 255, 0), SCREEN_W / 2, SCREEN_H / 2 - 50, ALLEGRO_ALIGN_CENTER, "FIM DE JOGO");
-                    al_draw_text(font_pequena, al_map_rgb(255, 255, 255), SCREEN_W / 2, SCREEN_H / 2 + 50, ALLEGRO_ALIGN_CENTER, "Voltando ao menu em 10 segundos...");
+                    al_draw_text(font_small, al_map_rgb(255, 255, 255), SCREEN_W / 2, SCREEN_H / 2 + 50, ALLEGRO_ALIGN_CENTER, "Voltando ao menu em 10 segundos...");
                 }
             }
 
-            desenhar_mouse();
+            draw_mouse();
             al_flip_display();
         }
     }
 
-    liberar_prologo();
-    liberar_game_over();
-    liberar_areas();
-    liberar_botoes();
-    liberar_mouse_sprite();
-    liberar_sprites_vidas();
-    liberar_sprites_enemys();
-    liberar_sprites_dicas();
-    liberar_player_death_sprite(&player);
-    liberar_porta();
-    liberar_sprites_escalados(player_frames_scaled, frames_carregados);
-    liberar_sprites_escalados(player_jump_frames_scaled, jump_frames_carregados);
+    destroy_prologue();
+    destroy_game_over();
+    destroy_areas();
+    destroy_buttons();
+    destroy_mouse_sprite();
+    destroy_heart_sprites();
+    destroy_enemy_sprites();
+    destroy_tip_sprites();
+    destroy_player_death_sprite(&player);
+    destroy_door();
+    destroy_scaled_sprites(player_frames_scaled, frames_loaded);
+    destroy_scaled_sprites(player_jump_frames_scaled, jump_frames_loaded);
 
-    for (int i = 0; i < frames_carregados; i++) {
+    for (int i = 0; i < frames_loaded; i++) {
         if (player_frames_right[i]) {
             al_destroy_bitmap(player_frames_right[i]);
         }
     }
 
-    for (int i = 0; i < jump_frames_carregados; i++) {
+    for (int i = 0; i < jump_frames_loaded; i++) {
         if (player_jump_frames_right[i]) {
             al_destroy_bitmap(player_jump_frames_right[i]);
         }
@@ -1789,7 +1731,7 @@ int main(void) {
 
     al_destroy_bitmap(title_logo_bitmap);
     al_destroy_font(font);
-    al_destroy_font(font_pequena);
+    al_destroy_font(font_small);
     al_destroy_bitmap(menu_background_bitmap);
     al_destroy_timer(timer);
     al_destroy_display(display);
