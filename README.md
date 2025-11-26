@@ -5,10 +5,10 @@
 **Projeto Integrador - Jogo Educacional em 2D**
 
 ## 📖 **História**
-O protagonista é um guerreiro que foi inserido em um universo desconhecido, na qual ele precisa passar de mundo em mundo derrotando chefes de cada matéria, para assim adquirir respostas e escapar.
+O protagonista é um guerreiro que foi inserido em um universo desconhecido, na qual ele só consegue avançar através do conhecimento adquirido ao longo do caminho.
 
 ## 🎯 **Mecânica**
-Jogo no estilo 2D que foca na progressão de mundos, com mecânicas de plataforma e combate, além de perguntas ao final de cada mundo que testam o aprendizado do jogador, com auxílio de dicas colecionáveis.
+Jogo no estilo 2D com mecânicas de plataforma e combate, além de perguntas e puzzle que testam o aprendizado do jogador, com auxílio de dicas colecionáveis.
 
 ## ✨ **Features**
 - Chefes com padrões únicos
